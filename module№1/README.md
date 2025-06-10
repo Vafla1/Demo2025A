@@ -186,26 +186,31 @@ ip domain-name au-team.irpo
 
 <br/>
 
-#### Наcтройка IP-адресации на **HQ-SRV**, **BR-SRV**, **HQ-CLI** (настройка IP-адресации на **ISP** проводится в [следующем задании](https://github.com/damh66/demo2025/tree/main/module1#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-2))
+#### Наcтройка IP-адресации на **HQ-SRV**, **BR-SRV**, **HQ-CLI** (настройка IP-адресации на **ISP** проводится в [следующем задании](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%961/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-2))
 
 Приводим файлы **`options`**, **`ipv4address`**, **`ipv4route`** в директории **`/etc/net/ifaces/*имя интерфейса*/`** к следующему виду (в примере **HQ-SRV**):
-```yml
-DISABLED=no
-TYPE=eth
-BOOTPROTO=static
-CONFIG_IPV4=yes
-```
 > **`options`**
 
 ```yml
-192.168.100.62/26
+BOOTPROTO=static
+TYPE=eth
+CONFIG_WIRELESS=no
+SYSTEMD_BOOTPROTO=dhcp4
+CONFIG_IPV4=yes
+DISABLED=no
+NM_CONTROLLED=no
+SYSTEMD_CONTROLLED=no
 ```
-> **`ipv4address`**
 
+> **`ipv4address`**
 ```yml
-default via 192.168.100.1
+10.0.100.2/26
 ```
+
 > **`ipv4route`**
+```yml
+default via 10.0.100.1
+```
 
 <br/>
 
@@ -215,58 +220,62 @@ default via 192.168.100.1
 
 - Создаем логический интерфейс:
 ```yml
-interface int0
+interface ens18
   description "to isp"
   ip address 172.16.4.2/28
 ```
+### Пример:
+![image](https://github.com/user-attachments/assets/21ef0bd3-bd79-44ec-80da-308fe7b3a79b)
 
-- Настраиваем физический порт:
+- Настраиваем физический порт и объединеняем с интерфейсом:
 ```yml
-port ge0
-  service-instance ge0/int0
+port te0
+  service-instance te0/ens18
     encapsulation untagged
+    connect ip interface ens18
 ```
-
-- Объединеняем порт с интерфейсом:
-```yml
-interface int0
-  connect port ge0 service-instance ge0/int0
-```
+### Пример(неверный service-instance):
+![image](https://github.com/user-attachments/assets/6aabeb63-e49b-4c68-9669-a456a4b92a97)
 
 <br/>
 
 Настраиваем интерфейсы на **HQ-RTR**, которые смотрят в сторону **HQ-SRV** и **HQ-CLI** (с разделением на VLAN):
 
-- Создаем два интерфейса:
+- Создаем три интерфейса:
 ```yml
-interface int1
+interface ens19
   description "to hq-srv"
-  ip address 192.168.100.1/26
+  ip address 10.0.100.1/26
 !
-interface int2
+interface ens20
   description "to hq-cli"
-  ip address 192.168.200.1/28
+  ip address 10.0.200.1/28
+!
+interface ens99
+  description "management"
+  ip address 10.0.99.1/28
 ```
 
-- Настраиваем порт:
+- Настраиваем порт и объединяем с интерфейсами:
 ```yml
-port ge1
-  service-instance ge1/int1
+port te1
+  service-instance te1/ens19
     encapsulation dot1q 100
     rewrite pop 1
-  service-instance ge1/int2
+    connect ip interface ens19
+  service-instance te1/ens20
     encapsulation dot1q 200
     rewrite pop 1
+    connect ip interface ens20
+  service-instance te1/ens99
+    encapsulation dot1q 999
+    rewrite pop 1
+    connect ip interface ens99
 ```
-
-- Объединяем порт с интерфейсами:
-```yml
-interface int1
-  connect port ge1 service-instance ge1/int1
-!
-interface int2
-  connect port ge1 service-instance ge1/int2
-```
+### Пример(неверный service-instance):
+![image](https://github.com/user-attachments/assets/77712011-dc75-47cb-8328-b47e02e82bcd)
+![image](https://github.com/user-attachments/assets/f2dfbbaa-0538-4c9b-aff6-c2edd3e0802a)
+![image](https://github.com/user-attachments/assets/cc5c7fb3-218e-4122-a9fc-92d508dd114f)
 
 <br/>
 
@@ -274,12 +283,15 @@ interface int2
 
 <br/>
 
-#### Добавление маршрута по умолчанию в EcoRouter
+#### Добавление маршрута по умолчанию в EcoRouter (на HQ-RTR и на BR-RTR)
 
 Прописываем следующее:
 ```yml
 ip route 0.0.0.0 0.0.0.0 *адрес шлюза*
 ```
+### Пример:
+![image](https://github.com/user-attachments/assets/7bae2cc9-426c-4227-a34a-904daf8ec519)
+![image](https://github.com/user-attachments/assets/c0f5cdf1-0665-4aa6-8ddb-433612faee4d)
 
 </details>
 
@@ -307,40 +319,32 @@ ip route 0.0.0.0 0.0.0.0 *адрес шлюза*
 <summary>Решение</summary>
 <br/>
 
-#### Настройка интерфейса, который получает IP-адрес по DHCP
-
-Файл **`options`** (в директории интерфейса) приводим к следующему виду:
-```yml
-BOOTPROTO=dhcp
-TYPE=eth
-DISABLED=no
-CONFIG_IPV4=yes
-```
-> **`BOOTPROTO=dhcp`** - заменили статический способ настройки адреса на динамическое получение
-
-<br/>
-
-#### Настройка маршрута по умолчанию
-
-Прописываем шлюз по умолчанию:
-```yml
-default via *адрес шлюза*
-```
-
-<br/>
-
 #### Настройка интерфейсов, смотрящих в сторону HQ-RTR и BR-RTR происходит аналогично настройке в [Задании 1](https://github.com/damh66/demo2025/tree/main/module1#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1)
 
 <br/>
 
-#### Включение маршрутизации
+#### Настройка динамической сетевой трансляций в сторону HQ-RTR и BR-RTR для доступа к сети Интернет
+
+Необходимо установить iptables:
+```yml
+apt-get install iptables
+```
+Затем настроить его:
+```yml
+iptables -t nat -A POSTROUTING -o ens18 -j MASQURADE
+```
+Сохранить и внести в автозапуск
+```yml
+iptables-save -f /etc/sysconfig/iptables
+systemctl enable --now iptables
+```
+
+<br/>
 
 В файле **`/etc/net/sysctl.conf`** изменяем строку:
 ```yml
 net.ipv4.ip_forward = 1
 ```
-
-<br/>
 
 Изменения в файле **`sysctl.conf`** применяем следующей командой:
 ```yml
