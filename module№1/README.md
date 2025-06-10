@@ -1,4 +1,4 @@
-# *Demo2025 - Модуль 1*
+![image](https://github.com/user-attachments/assets/befec19c-3a61-4019-b6dd-c726a31601a7)# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -389,19 +389,18 @@ useradd sshuser -u 1010
 ```
 > опция **`-u`** позволяет указать идентификатор пользователя сразу при создании
 
-<br/>
-
 Задаем пароль:
 ```yml
 passwd sshuser
 ```
 
-<br/>
-
 Добавляем в группу **wheel**:
 ```yml
 usermod -aG wheel sshuser
 ```
+
+### Пример (на BR-SRV):
+![image](https://github.com/user-attachments/assets/bf7e4bab-b5a0-4518-8052-0c8592e4c446)
 
 <br/>
 
@@ -413,27 +412,24 @@ sshuser ALL=(ALL) NOPASSWD:ALL
 
 <br/>
 
-#### Создание пользователя `net_admin` на Ecorouter
+#### В режиме конфигураций создаем пользователя `net_admin` на Ecorouter
 
 Создаем самого пользователя:
 ```yml
 username net_admin
 ```
 
-<br/>
-
 Задаем пароль:
 ```yml
 password P@ssw0rd
 ```
 
-<br/>
-
 Присваиваем привилегии администратора:
 ```yml
 role admin
 ```
-
+### Пример (на HQ-RTR):
+ ![image](https://github.com/user-attachments/assets/2c4fb739-6d69-4a55-95c4-74a2dee462f4)
 
 </details>
 
@@ -451,7 +447,7 @@ role admin
 <br/>
 
 <details>
-<summary>Не решено</summary>
+<summary>В моем случае виртуальный коммутатор был настроен</summary>
 <br/>
 
 
