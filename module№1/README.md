@@ -1,4 +1,4 @@
-# *Demo2025 - Модуль 1*
+![image](https://github.com/user-attachments/assets/f36f8edf-f2c2-40e7-aed5-607bba28c2b2)# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -29,7 +29,7 @@
 <br/>
 
 <p align="center">
-  <img width="450" height="600" src="![image](https://github.com/user-attachments/assets/a25476e9-9edb-40d8-a0e0-75ef20766c16)"
+  <img width="450" height="600" src=
 <p\>
 <p align="center"><strong>Топология</strong></p>
 
