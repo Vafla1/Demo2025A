@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/f36f8edf-f2c2-40e7-aed5-607bba28c2b2)# *Demo2025 - Модуль 1*
+# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -29,9 +29,9 @@
 <br/>
 
 <p align="center">
-  <img width="450" height="600" src=
+  <img width=auto height=auto src="https://github.com/user-attachments/assets/fa3a32f2-3a63-468d-bb4d-86261bf7f9c8"
 <p\>
-<p align="center"><strong>Топология</strong></p>
+<p align="center"><strong>Топология сети</strong></p>
 
 <br/>
 
@@ -61,15 +61,19 @@
 <summary>Решение</summary>
 <br/>
 
-**Полное доменное имя можно посмотреть в таблице для [Задания 10](https://github.com/damh66/demo2025/tree/main/module1#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-10)**
+**Полное доменное имя можно посмотреть в таблице для [Задания 10](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%961/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-10)**
 
 <br/>
 
-#### Настройка имен устройств на ALT Linux
+#### Настройка имен устройств на ALTLinux
 ```yml
-hostnamectl set-hostname <FQDN>; exec bash
+hostnamectl set-hostname <name>; exec bash
 ```
-> FQDN (Fully Qualified Domain Name) - полное доменное имя
+
+### Пример настройки на HQ-SRV:
+![image](https://github.com/user-attachments/assets/be647407-d83c-4565-be03-c4c7efe203b3)
+
+> `<name>` - полное имя устройства
 > 
 > `exec bash` - обновление оболочки
 
@@ -77,134 +81,103 @@ hostnamectl set-hostname <FQDN>; exec bash
 
 #### Настройка имен устройств на EcoRouter
 
-Переходим в режим конфигурации и прописываем следующее:
+Переходим в режим конфигурации:
+```yml
+en
+conf t
+```
+И прописываем следующее:
 ```yml
 hostname <name>
+ip domain-name au-team.irpo
 ```
-> `<name>` - желаемое имя устройства
 
-<br/>
+### Пример настройки на HQ-RTR:
+![image](https://github.com/user-attachments/assets/0ddb266f-1562-4ad1-be53-256ed0215dcd)
 
-<table align="center">
-  <tr>
-    <td align="center">Сеть</td>
-    <td align="center">Адрес подсети</td>
-    <td align="center">Пул-адресов</td>
-  </tr>
-  <tr>
-    <td align="center">SRV-Net (VLAN 100)</td>
-    <td align="center">192.168.100.0/26</td>
-    <td align="center">192.168.100.1 - 192.168.100.62</td>
-  </tr>
-  <tr>
-    <td align="center">CLI-Net (VLAN 200)</td>
-    <td align="center">192.168.200.0/28</td>
-    <td align="center">192.168.200.1 - 192.168.200.14</td>
-  </tr>
-  <tr>
-    <td align="center">BR-Net</td>
-    <td align="center">192.168.0.0/27</td>
-    <td align="center">192.168.0.1 - 192.168.0.30</td>
-  </tr>
-  <tr>
-    <td align="center">MGMT (VLAN 999)</td>
-    <td align="center">192.168.99.0/29</td>
-    <td align="center">192.168.99.1 - 192.168.99.6</td>
-  </tr>
-  <tr>
-    <td align="center">ISP-HQ</td>
-    <td align="center">172.16.4.0/28</td>
-    <td align="center">172.16.4.1 - 172.16.4.14</td>
-  </tr>
-  <tr>
-    <td align="center">ISP-BR</td>
-    <td align="center">172.16.5.0/28</td>
-    <td align="center">172.16.5.1 - 172.16.5.14</td>
-  </tr>
-</table>
-<p align="center"><strong>Таблица подсетей</strong></p>
-
-<br/>
+> `<name>` - полное имя устройства
 
 <table align="center">
   <tr>
     <td align="center">Имя устройства</td>
     <td align="center">Интерфейс</td>
     <td align="center">IPv4/IPv6</td>
-    <td align="center" >Маска/Префикс</td>
+    <td align="center">Маска/Префикс</td>
     <td align="center">Шлюз</td>
   </tr>
   <tr>
     <td align="center" rowspan="3">ISP</td>
-    <td align="center">ens33</td>
-    <td align="center">10.12.28.5 (DHCP)</td>
-    <td align="center">/24</td>
-    <td align="center">10.12.28.254</td>
+    <td align="center">ens18</td>
+    <td align="center">От провайдера (DHCP)</td>
+    <td align="center"></td>
+    <td align="center"></td>
   </tr>
   <tr>
-    <td align="center">ens34</td>
+    <td align="center">ens19</td>
+    <td align="center">172.16.4.1</td>
+    <td align="center">/28</td>
+    <td align="center"></td>
+  </tr>
+  <tr>
+    <td align="center">ens20</td>
     <td align="center">172.16.5.1</td>
     <td align="center">/28</td>
     <td align="center"></td>
   </tr>
   <tr>
-    <td align="center">ens35</td>
-    <td align="center">172.16.4.1</td>
-    <td align="center">/28</td>
-    <td align="center"></td>
-  </tr>
-  <tr>
-    <td align="center" rowspan="3">HQ-RTR</td>
-    <td align="center">int0</td>
+    <td align="center" rowspan="4">HQ-RTR</td>
+    <td align="center">ens18</td>
     <td align="center">172.16.4.2</td>
     <td align="center">/28</td>
-    <td align="center">172.16.4.1</td>
+    <td align="center" rowspan="4">172.16.4.1</td>
   </tr>
   <tr>
-    <td align="center">int1</td>
-    <td align="center">192.168.100.1</td>
+    <td align="center">ens19</td>
+    <td align="center">10.0.100.1</td>
     <td align="center">/26</td>
-    <td align="center"></td>
   </tr>
   <tr>
-    <td align="center">int2</td>
-    <td align="center">192.168.200.1</td>
+    <td align="center">ens20</td>
+    <td align="center">10.0.200.1</td>
     <td align="center">/28</td>
-    <td align="center"></td>
+  </tr>
+  <tr>
+    <td align="center">ens99</td>
+    <td align="center">10.0.99.1</td>
+    <td align="center">/29</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">BR-RTR</td>
-    <td align="center">int0</td>
+    <td align="center">ens18</td>
     <td align="center">172.16.5.2</td>
     <td align="center">/28</td>
-    <td align="center">172.16.5.1</td>
+    <td align="center" rowspan="2">172.16.5.1</td>
   </tr>
   <tr>
-    <td align="center">int1</td>
-    <td align="center">192.168.0.1</td>
+    <td align="center">ens19</td>
+    <td align="center">10.0.0.1</td>
     <td align="center">/27</td>
-    <td align="center"></td>
   </tr>
   <tr>
     <td align="center">HQ-SRV</td>
-    <td align="center">ens33</td>
-    <td align="center">192.168.100.62</td>
+    <td align="center">ens18</td>
+    <td align="center">10.0.100.2</td>
     <td align="center">/26</td>
-    <td align="center">192.168.100.1</td>
+    <td align="center">10.0.100.1</td>
   </tr>
   <tr>
     <td align="center">BR-SRV</td>
-    <td align="center">ens33</td>
-    <td align="center">192.168.0.30</td>
+    <td align="center">ens19</td>
+    <td align="center">10.0.0.2</td>
     <td align="center">/27</td>
-    <td align="center">192.168.0.1</td>
+    <td align="center">10.0.0.1</td>
   </tr>
   <tr>
     <td align="center">HQ-CLI</td>
-    <td align="center">ens33</td>
-    <td align="center">192.168.200.14</td>
+    <td align="center">ens18</td>
+    <td align="center">10.0.200.2(DHCP)</td>
     <td align="center">/28</td>
-    <td align="center">192.168.200.1</td>
+    <td align="center">10.0.200.1(DHCP)</td>
   </tr>
 </table>
 <p align="center"><strong>Таблица адресации</strong></p>
