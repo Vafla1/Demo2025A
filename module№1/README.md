@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/befec19c-3a61-4019-b6dd-c726a31601a7)# *Demo2025 - Модуль 1*
+# *Demo2025 - Модуль 1*
 
 ### Содержание
 
