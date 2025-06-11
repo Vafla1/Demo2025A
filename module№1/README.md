@@ -1,4 +1,4 @@
-# *Demo2025 - Модуль 1*
+![image](https://github.com/user-attachments/assets/1d8af385-cf05-40f9-b784-125fcc45c61e)# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -89,12 +89,13 @@ conf t
 И прописываем следующее:
 ```yml
 hostname <name>
+ip domain-name au-team.irpo
 ```
 
 #### Пример настройки на HQ-RTR:
-![image](https://github.com/user-attachments/assets/83a0ba98-b3b3-4b39-a11b-aac1d6af7874)
+![image](https://github.com/user-attachments/assets/acc01573-1cb2-4e6b-b0d9-35637146e347)
 
-> `<name>` - полное имя устройства
+> `<name>` - неполное имя устройства
 
 <table align="center">
   <tr>
@@ -451,8 +452,9 @@ passwd sshuser
 usermod -aG wheel sshuser
 ```
 
-### Пример (на BR-SRV):
-![image](https://github.com/user-attachments/assets/bf7e4bab-b5a0-4518-8052-0c8592e4c446)
+#### Пример (на HQ-SRV):
+![image](https://github.com/user-attachments/assets/44e2294a-7fae-4e5b-8b84-3c6fb0dedcf1)
+![image](https://github.com/user-attachments/assets/a775d23e-aa49-47ab-8e4e-deaffa702690)
 
 <br/>
 
@@ -460,6 +462,9 @@ usermod -aG wheel sshuser
 ```yml
 sshuser ALL=(ALL) NOPASSWD:ALL
 ```
+#### Пример (на HQ-SRV):
+![image](https://github.com/user-attachments/assets/d9f088ab-098e-4677-8cf6-2ed2a7002ce8)
+
 > Позволяет запускать **sudo** без аутентификации 
 
 <br/>
@@ -473,7 +478,7 @@ username net_admin
 
 Задаем пароль:
 ```yml
-password P@ssw0rd
+password P@$$word
 ```
 
 Присваиваем привилегии администратора:
@@ -481,7 +486,7 @@ password P@ssw0rd
 role admin
 ```
 ### Пример (на HQ-RTR):
- ![image](https://github.com/user-attachments/assets/2c4fb739-6d69-4a55-95c4-74a2dee462f4)
+![image](https://github.com/user-attachments/assets/766eb9ff-b9b6-4608-aa1a-bb2a1d971bc6)
 
 </details>
 
@@ -499,10 +504,8 @@ role admin
 <br/>
 
 <details>
-<summary>В моем случае виртуальный коммутатор был настроен</summary>
+<summary>Выполняется автоматический</summary>
 <br/>
-
-
 
 </details>
 
@@ -528,19 +531,24 @@ role admin
 Port 2024
 MaxAuthTries 2
 PasswordAuthentication yes
-Banner /etc/openssh/bannermotd
+Banner /etc/openssh/banner
 AllowUsers  sshuser
 ```
+#### Пример (на HQ-SRV):
+![image](https://github.com/user-attachments/assets/f13552a5-8be8-4b32-a658-68f7a025f402)
+
 > В параметре **AllowUsers** вместо пробела используется **`Tab`**
 
 <br/>
 
-Создаем файл **`bannermotd`**:
+Создаем файл **`banner`**:
 ```yml
 ----------------------
 Authorized access only
 ----------------------
 ```
+#### Пример (на HQ-SRV):
+![image](https://github.com/user-attachments/assets/92f893b8-1de5-4e63-8afb-f63b61f38442)
 
 <br/>
 
@@ -572,6 +580,7 @@ systemctl restart sshd
 Создаем интерфейс **GRE**-туннеля на **HQ-RTR**:
 ```yml
 int tunnel.0
+des
 ```
 
 <br/>
@@ -580,6 +589,8 @@ int tunnel.0
 ```yml
 ip add 172.16.0.1/30
 ```
+#### Пример (на HQ-RTR):
+![image](https://github.com/user-attachments/assets/aca33157-c9c2-468e-8ccb-61f98203bc99)
 
 <br/>
 
