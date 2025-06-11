@@ -61,7 +61,7 @@
 <summary>Решение</summary>
 <br/>
 
-### Полное доменное имя можно посмотреть в таблице 2
+#### Полное доменное имя можно посмотреть в таблице 2
 
 <br/>
 
@@ -70,7 +70,7 @@
 hostnamectl set-hostname <name>; exec bash
 ```
 
-### Пример настройки на HQ-SRV:
+#### Пример настройки на HQ-SRV:
 ![image](https://github.com/user-attachments/assets/be647407-d83c-4565-be03-c4c7efe203b3)
 
 > `<name>` - полное имя устройства
@@ -91,7 +91,7 @@ conf t
 hostname <name>
 ```
 
-### Пример настройки на HQ-RTR:
+#### Пример настройки на HQ-RTR:
 ![image](https://github.com/user-attachments/assets/83a0ba98-b3b3-4b39-a11b-aac1d6af7874)
 
 > `<name>` - полное имя устройства
@@ -170,35 +170,35 @@ hostname <name>
   </tr>
   <tr>
     <td align="center" rowspan="4">HQ-RTR</td>
-    <td align="center">ens18</td>
+    <td align="center">ToISP</td>
     <td align="center">172.16.4.2</td>
     <td align="center">/28</td>
     <td align="center" rowspan="4">172.16.4.1</td>
   </tr>
   <tr>
-    <td align="center">ens19</td>
+    <td align="center">ToHqSRV</td>
     <td align="center">10.0.100.1</td>
     <td align="center">/26</td>
   </tr>
   <tr>
-    <td align="center">ens20</td>
+    <td align="center">ToHqCLI</td>
     <td align="center">10.0.200.1</td>
     <td align="center">/28</td>
   </tr>
   <tr>
-    <td align="center">ens99</td>
+    <td align="center">Managment</td>
     <td align="center">10.0.99.1</td>
     <td align="center">/29</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">BR-RTR</td>
-    <td align="center">ens18</td>
+    <td align="center">ToISP</td>
     <td align="center">172.16.5.2</td>
     <td align="center">/28</td>
     <td align="center" rowspan="2">172.16.5.1</td>
   </tr>
   <tr>
-    <td align="center">ens19</td>
+    <td align="center">ToBrSRV</td>
     <td align="center">10.0.0.1</td>
     <td align="center">/27</td>
   </tr>
@@ -245,19 +245,25 @@ DISABLED=no
 NM_CONTROLLED=no
 SYSTEMD_CONTROLLED=no
 ```
-### Пример (на HQ-SRV):
+#### Пример (на HQ-SRV):
 ![image](https://github.com/user-attachments/assets/266a2619-c68d-4aa3-9819-21ab59b78204)
 
 > **`ipv4address`**
 ```yml
 10.0.100.2/26
 ```
+![image](https://github.com/user-attachments/assets/f7996d25-dc69-4526-a14f-71451a4ba614)
 
 > **`ipv4route`**
 ```yml
 default via 10.0.100.1
 ```
+![image](https://github.com/user-attachments/assets/04195ac8-c671-4cee-818d-9aa35f63ed61)
 
+Необходимо перезагрузить службу
+```yml
+systemctl restart network
+```
 <br/>
 
 #### Настройка IP-адресации на EcoRouter
@@ -266,22 +272,22 @@ default via 10.0.100.1
 
 - Создаем логический интерфейс:
 ```yml
-interface ens18
+interface ToISP
   description "to isp"
   ip address 172.16.4.2/28
 ```
-### Пример:
-![image](https://github.com/user-attachments/assets/21ef0bd3-bd79-44ec-80da-308fe7b3a79b)
+#### Пример:
+![image](https://github.com/user-attachments/assets/a40e027d-3948-4fdc-8e93-089ca2ba1399)
 
 - Настраиваем физический порт и объединеняем с интерфейсом:
 ```yml
 port te0
-  service-instance te0/ens18
+  service-instance te0/ToISP
     encapsulation untagged
-    connect ip interface ens18
+    connect ip interface ToISP
 ```
-### Пример(неверный service-instance):
-![image](https://github.com/user-attachments/assets/6aabeb63-e49b-4c68-9669-a456a4b92a97)
+#### Пример:
+![image](https://github.com/user-attachments/assets/da29e355-e38a-40d7-b196-48b9a46d86e1)
 
 <br/>
 
@@ -289,39 +295,39 @@ port te0
 
 - Создаем три интерфейса:
 ```yml
-interface ens19
+interface ToHqSRV
   description "to hq-srv"
   ip address 10.0.100.1/26
 !
-interface ens20
+interface ToHqCLI
   description "to hq-cli"
   ip address 10.0.200.1/28
 !
-interface ens99
+interface Managment
   description "management"
   ip address 10.0.99.1/28
 ```
+#### Пример:
+![image](https://github.com/user-attachments/assets/5e9909d1-832c-42e2-bc8f-7c132457fb93)
 
 - Настраиваем порт и объединяем с интерфейсами:
 ```yml
 port te1
-  service-instance te1/ens19
+  service-instance te1/ToHqSRV
     encapsulation dot1q 100
     rewrite pop 1
-    connect ip interface ens19
-  service-instance te1/ens20
+    connect ip interface ToHqSRV
+  service-instance te1/ToHqCLI
     encapsulation dot1q 200
     rewrite pop 1
-    connect ip interface ens20
-  service-instance te1/ens99
+    connect ip interface ToHqCLI
+  service-instance te1/Managment
     encapsulation dot1q 999
     rewrite pop 1
-    connect ip interface ens99
+    connect ip interface Managment
 ```
-### Пример(неверный service-instance):
-![image](https://github.com/user-attachments/assets/77712011-dc75-47cb-8328-b47e02e82bcd)
-![image](https://github.com/user-attachments/assets/f2dfbbaa-0538-4c9b-aff6-c2edd3e0802a)
-![image](https://github.com/user-attachments/assets/cc5c7fb3-218e-4122-a9fc-92d508dd114f)
+#### Пример:
+![image](https://github.com/user-attachments/assets/412a544f-71e2-4a47-be72-160c8d3a7954)
 
 <br/>
 
@@ -377,7 +383,7 @@ apt-get install iptables
 ```
 Затем настроить его:
 ```yml
-iptables -t nat -A POSTROUTING -o ens18 -j MASQURADE
+iptables -t nat -A POSTROUTING -o ens18 -j MASQUERADE
 ```
 Сохранить и внести в автозапуск
 ```yml
