@@ -61,7 +61,7 @@
 <summary>Решение</summary>
 <br/>
 
-**Полное доменное имя можно посмотреть в таблице для [Задания 10](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%961/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-10)**
+### Полное доменное имя можно посмотреть в таблице 2
 
 <br/>
 
@@ -89,13 +89,57 @@ conf t
 И прописываем следующее:
 ```yml
 hostname <name>
-ip domain-name au-team.irpo
 ```
 
 ### Пример настройки на HQ-RTR:
-![image](https://github.com/user-attachments/assets/0ddb266f-1562-4ad1-be53-256ed0215dcd)
+![image](https://github.com/user-attachments/assets/83a0ba98-b3b3-4b39-a11b-aac1d6af7874)
 
 > `<name>` - полное имя устройства
+
+<table align="center">
+  <tr>
+    <td align="center">Устройство</td>
+    <td align="center">Запись</td>
+    <td align="center">Тип</td>
+  </tr>
+  <tr>
+    <td align="center">HQ-RTR</td>
+    <td align="center">hq-rtr.au-team.irpo</td>
+    <td align="center">A,PTR</td>
+  </tr>
+  <tr>
+    <td align="center">BR-RTR</td>
+    <td align="center">br-rtr.au-team.irpo</td>
+    <td align="center">A</td>
+  </tr>
+  <tr>
+    <td align="center">HQ-SRV</td>
+    <td align="center">hq-srv.au-team.irpo</td>
+    <td align="center">A,PTR</td>
+  </tr>
+  <tr>
+    <td align="center">HQ-CLI</td>
+    <td align="center">hq-cli.au-team.irpo</td>
+    <td align="center">A,PTR</td>
+  </tr>
+  <tr>
+    <td align="center">BR-SRV</td>
+    <td align="center">br-srv.au-team.irpo</td>
+    <td align="center">A</td>
+  </tr>
+  <tr>
+    <td align="center">HQ-RTR</td>
+    <td align="center">moodle.au-team.irpo</td>
+    <td align="center">CNAME</td>
+  </tr>
+  <tr>
+    <td align="center">BR-RTR</td>
+    <td align="center">wiki.au-team.irpo</td>
+    <td align="center">CNAME</td>
+  </tr>
+</table>
+
+<p align="center"><strong>Таблица 2</strong></p>
 
 <table align="center">
   <tr>
@@ -195,12 +239,14 @@ ip domain-name au-team.irpo
 BOOTPROTO=static
 TYPE=eth
 CONFIG_WIRELESS=no
-SYSTEMD_BOOTPROTO=dhcp4
+SYSTEMD_BOOTPROTO=static
 CONFIG_IPV4=yes
 DISABLED=no
 NM_CONTROLLED=no
 SYSTEMD_CONTROLLED=no
 ```
+### Пример (на HQ-SRV):
+![image](https://github.com/user-attachments/assets/266a2619-c68d-4aa3-9819-21ab59b78204)
 
 > **`ipv4address`**
 ```yml
