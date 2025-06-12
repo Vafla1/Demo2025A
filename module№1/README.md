@@ -903,51 +903,21 @@ apt-get install -y bind bind-utils
 
 Изменяем содержание перечисленных строк в **`/etc/bind/options.conf`** к следующему виду:
 ```yml
-listen-on { 127.0.0.1; 192.168.100.62; };
+listen-on { 127.0.0.1; 10.0.100.2; };
 
-forwarders { 77.88.8.8; };
+forwarders { 8.8.8.8; };
 
-allow-query { 192.168.100.0/26; 192.168.200.0/28; 192.168.0.0/27; };
+allow-query { 127.0.0.1; 10.0.100.0/26; 10.0.200.0/28; 10.0.99.0/29; 10.0.0.0/27; };
 
+allow-recursion { 10.0.100.0/26; 10.0.200.0/28; 10.0.99.0/29; 10.0.0.0/27; };
 ```
 > **`listen-on`** - сетевые интерфейсы, которые будет прослушивать служба
 >
 > **`forwarders`** - DNS-сервер, на который будут перенаправляться запросы клиентов
 >
 > **`allow-query`** - IP-адреса и подсети от которых будут обрабатываться запросы
-
-<br/>
-
-Конфигурируем ключи **rndc**:
-```yml
-rndc-confgen > /etc/rndckey
-```
-> Делаем вывод в файл, чтобы скопировать оттуда
-
-<br/>
-
-Приводим файл **`/etc/bind/rndc.key`** к следующему виду:
-```yml
-//key "rndc-key" {
-//  secret "@RNDC_KEY@";
-//};
-
-key "rndc-key" {
-  algorithm hmac-sha256;
-  secret "VTmhjyXFDo0QpaBl3UQWx1e0g9HElS2MiFDtNQzDylo=";
-};
-```
-> Первые строки закомментировали
->
-> Вставили ключ **rndc**
-
-<br/>
-
-Проверяем на ошибки:
-```yml
-named-checkconf
-```
-
+> 
+> **`allow-recursion`** — это параметр в конфигурационном файле DNS-сервера, который указывает, каким клиентам можно посылать рекурсивные запросы. 
 <br/>
 
 Запускаем и добавляем в автозагрузку **`bind`**:
@@ -957,13 +927,18 @@ systemctl enable --now bind
 
 <br/>
 
-Изменяем **`resolv.conf`** интерфейса:
+Изменяем **`resolv.conf`** на интерфейсе:
 ```yml
 search au-team.irpo
 nameserver 127.0.0.1
-nameserver 192.168.100.62
-nameserver 77.88.8.8
-search yandex.ru
+```
+
+<br/>
+
+Изменяем **`resolv.conf`** всех интерфейсов на всех устройствах кромен ISP и HQ-CLI и HQ-SRV:
+```yml
+search au-team.irpo
+nameserver 10.0.100.2
 ```
 
 <br/>
@@ -974,23 +949,27 @@ search yandex.ru
 ```yml
 zone "au-team.irpo" {
   type master;
-  file "au-team.irpo.db";
+  file "au-team.irpo";
 };
-```
-
-<br/>
-
-Копируем шаблон прямой зоны:
-```yml
-cp /etc/bind/zone/localdomain /etc/bind/zone/au-team.irpo.db
 ```
 
 <br/>
 
 Задаем пользователя и права на файл:
 ```yml
-chown named. /etc/bind/zone/au-team.irpo.db
-chmod 600 /etc/bind/zone/au-team.irpo.db
+chown named. /etc/bind/zone/100.168.192.in-addr.arpa
+chmod 600 /etc/bind/zone/100.168.192.in-addr.arpa
+chown named. /etc/bind/zone/200.168.192.in-addr.arpa
+chmod 600 /etc/bind/zone/200.168.192.in-addr.arpa
+chown named. /etc/bind/zone/0.168.192.in-addr.arpa
+chmod 600 /etc/bind/zone/0.168.192.in-addr.arpa
+```
+
+<br/>
+
+Копируем шаблон прямой зоны:
+```yml
+cp /etc/bind/zone/empty /etc/bind/zone/au-team.irpo
 ```
 
 <br/>
@@ -1006,14 +985,14 @@ $TTL    1D
                                 1H              ; ncache
                         )
         IN      NS      au-team.irpo.
-        IN      A       192.168.100.62
-hq-rtr  IN      A       192.168.100.1
-br-rtr  IN      A       192.168.0.1
-hq-srv  IN      A       192.168.100.62
-hq-cli  IN      A       192.168.200.14
-br-srv  IN      A       192.168.0.30
-moodle  IN      CNAME   hq-rtr
-wiki    IN      CNAME   hq-rtr
+        IN      A       10.0.100.2
+hq-srv          A       10.0.100.2
+hq-cli          A       10.0.200.2
+br-srv          A       10.0.0.2
+hq-rtr          A       10.0.100.1
+br-rtr          A       10.0.0.1
+moodle          CNAME   hq-rtr
+wiki            CNAME   hq-rtr
 ```
 
 <br/>
@@ -1029,19 +1008,9 @@ named-checkconf -z
 
 Прописываем их в **`/etc/bind/local.conf`**:
 ```yml
-zone "100.168.192.in-addr.arpa" {
+zone "0.10.in-addr.arpa" {
   type master;
-  file "100.168.192.in-addr.arpa";
-};
-
-zone "200.168.192.in-addr.arpa" {
-  type master;
-  file "200.168.192.in-addr.arpa";
-};
-
-zone "0.168.192.in-addr.arpa" {
-  type master;
-  file "0.168.192.in-addr.arpa";
+  file "0.10.in-addr.arpa";
 };
 ```
 
