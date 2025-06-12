@@ -920,13 +920,6 @@ allow-recursion { 10.0.100.0/26; 10.0.200.0/28; 10.0.99.0/29; 10.0.0.0/27; };
 > **`allow-recursion`** — это параметр в конфигурационном файле DNS-сервера, который указывает, каким клиентам можно посылать рекурсивные запросы. 
 <br/>
 
-Запускаем и добавляем в автозагрузку **`bind`**:
-```yml
-systemctl enable --now bind
-```
-
-<br/>
-
 Изменяем **`resolv.conf`** на интерфейсе:
 ```yml
 search au-team.irpo
@@ -957,12 +950,7 @@ zone "au-team.irpo" {
 
 Задаем пользователя и права на файл:
 ```yml
-chown named. /etc/bind/zone/100.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/100.168.192.in-addr.arpa
-chown named. /etc/bind/zone/200.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/200.168.192.in-addr.arpa
-chown named. /etc/bind/zone/0.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/0.168.192.in-addr.arpa
+chown root:named /etc/bind/zone/au-team.irpo
 ```
 
 <br/>
@@ -1016,23 +1004,16 @@ zone "0.10.in-addr.arpa" {
 
 <br/>
 
-Копируем шаблон обратной зоны:
+Копируем прямую зону для обратной зоны:
 ```yml
-cp /etc/bind/zone/127.in-addr.arpa /etc/bind/zone/100.168.192.in-addr.arpa
-cp /etc/bind/zone/127.in-addr.arpa /etc/bind/zone/200.168.192.in-addr.arpa
-cp /etc/bind/zone/127.in-addr.arpa /etc/bind/zone/0.168.192.in-addr.arpa
+cp /etc/bind/zone/au-team.irpo /etc/bind/zone/0.10.in-addr.arpa
 ```
 
 <br/>
 
 Задаем пользователя и права на файл:
 ```yml
-chown named. /etc/bind/zone/100.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/100.168.192.in-addr.arpa
-chown named. /etc/bind/zone/200.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/200.168.192.in-addr.arpa
-chown named. /etc/bind/zone/0.168.192.in-addr.arpa
-chmod 600 /etc/bind/zone/0.168.192.in-addr.arpa
+chown root:named /etc/bind/zone/0.10.in-addr.arpa
 ```
 
 <br/>
@@ -1048,40 +1029,22 @@ $TTL    1D
                                 1H              ; ncache
                         )
         IN      NS      au-team.irpo.
-1       IN      PTR     hq-rtr.au-team.irpo.
-62      IN      PTR     hq-srv.au-team.irpo.
-```
-```yml
-$TTL    1D
-@       IN      SOA     au-team.irpo. root.au-team.irpo. (
-                                2024102200      ; serial
-                                12H             ; refresh
-                                1H              ; retry
-                                1W              ; expire
-                                1H              ; ncache
-                        )
-        IN      NS      au-team.irpo.
-14      IN      PTR     hq-cli.au-team.irpo.
-```
-```yml
-$TTL    1D
-@       IN      SOA     au-team.irpo. root.au-team.irpo. (
-                                2024102200      ; serial
-                                12H             ; refresh
-                                1H              ; retry
-                                1W              ; expire
-                                1H              ; ncache
-                        )
-        IN      NS      au-team.irpo.
-1      IN      PTR      br-rtr.au-team.irpo.
-30     IN      PTR      br-srv.au-team.irpo.
-```
+100.2           PTR     hq-srv.au-team.irpo.
+200.2           PTR     hq-cli.au-team.irpo.
+100.1           PTR     hq-rtr.au-team.irpo
 
 <br/>
 
 Проверяем на ошибки:
 ```yml
 named-checkconf -z
+```
+
+<br/>
+
+Запускаем и добавляем в автозагрузку **`bind`**:
+```yml
+systemctl enable --now bind
 ```
 
 <br/>
