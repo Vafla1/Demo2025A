@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/1d8af385-cf05-40f9-b784-125fcc45c61e)# *Demo2025 - Модуль 1*
+![image](https://github.com/user-attachments/assets/c213ab0a-f7f1-4d3c-ad3e-9052cca12148)![image](https://github.com/user-attachments/assets/1d8af385-cf05-40f9-b784-125fcc45c61e)# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -454,6 +454,7 @@ usermod -aG wheel sshuser
 
 #### Пример (на HQ-SRV):
 ![image](https://github.com/user-attachments/assets/44e2294a-7fae-4e5b-8b84-3c6fb0dedcf1)
+
 ![image](https://github.com/user-attachments/assets/a775d23e-aa49-47ab-8e4e-deaffa702690)
 
 <br/>
@@ -589,8 +590,6 @@ des
 ```yml
 ip add 172.16.0.1/30
 ```
-#### Пример (на HQ-RTR):
-![image](https://github.com/user-attachments/assets/aca33157-c9c2-468e-8ccb-61f98203bc99)
 
 <br/>
 
@@ -608,6 +607,9 @@ ip tunnel 172.16.4.2 172.16.5.2 mode gre
 ```
 
 <br/>
+
+#### Пример (на HQ-RTR):
+![image](https://github.com/user-attachments/assets/8d27409b-828d-4aae-b7d9-939c5be99f43)
 
 #### GRE-туннель на BR-RTR настраивается аналогично примеру выше
 
@@ -638,13 +640,23 @@ ip tunnel 172.16.4.2 172.16.5.2 mode gre
 Создаем процесс **OSPF**, указываем **идентификатор маршрутизатора**, объявляем сети и указываем **пассивные** интерфейсы:
 ```yml
 router ospf 1
-  router-id 1.1.1.1
-  network 172.16.0.0/30 area 0
-  network 192.168.100.0/26 area 0
-  network 192.168.200.0/28 area 0
+  router-id 10.10.10.1
   passive-interface default
   no passive-interface tunnel.0
+  network 10.10.10.0/30 area 0
+  network 10.0.100.0/26 area 0
+  network 10.0.200.0/28 area 0
+  network 10.0.99.0/29 area 0
 ```
+
+Создание парольной защиты для **OSPF**:
+```yml
+int tunnel.0
+ip ospf authentication message-digest
+ip ospf message-digest-key 1 md5 ecorouter
+```
+#### Пример:
+![image](https://github.com/user-attachments/assets/2479ce46-b8e7-4917-a4d1-1ffa9fe3d585)
 
 <br/>
 
@@ -668,43 +680,22 @@ router ospf 1
 <summary>Решение</summary>
 <br/>
 
-#### Настройка NAT на ISP
-
-Добавляем правила **`iptables`** на ISP
-```yml
-iptables -t nat -A POSTROUTING -o ens224 -s 172.16.4.0/28 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o ens224 -s 172.16.5.0/28 -j MASQUERADE
-```
-
-<br/>
-
-Сохраняем правила:
-```yml
-iptables-save > /etc/sysconfig/iptables
-```
-
-<br/>
-
-Включаем и добавляем **`iptables`** в автозагрузку:
-```yml
-systemctl enable --now iptables
-```
-
-<br/>
-
 #### Настройка NAT на HQ-RTR
 
 Указываем **внутренние** и **внешние** интерфейсы:
 ```yml
-int int1
-  ip nat inside
-!
-int int2
-  ip nat inside
-!
-int int0
+int ToISP
   ip nat outside
+!
+int ToHqSRV
+  ip nat inside
+!
+int ToHqCLI
+  ip nat inside
 ```
+
+#### Пример:
+![image](https://github.com/user-attachments/assets/66a213d3-0651-49af-8faa-62b9eafbabd5)
 
 <br/>
 
@@ -713,12 +704,18 @@ int int0
 ip nat pool NAT_POOL 192.168.100.1-192.168.100.62,192.168.200.1-192.168.200.14
 ```
 
+#### Пример:
+![image](https://github.com/user-attachments/assets/dd763ea1-731e-4a8e-b4d3-620cf25ce01d)
+
 <br/>
 
 Создаем **правило** трансляции адресов, указывая внешний интерфейс:
 ```yml
-ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+ip nat source dynamic inside-to-outside pool NAT_POOL overload interface ToISP
 ```
+
+#### Пример:
+![image](https://github.com/user-attachments/assets/687ebd11-e29c-40d4-a560-7db9598df5c5)
 
 <br/>
 
@@ -726,16 +723,23 @@ ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
 
 Конфигурация:
 ```yml
-int int1
-  ip nat inside
-!
-int int0
+int ToISP
   ip nat outside
 !
-ip nat pool NAT_POOL 192.168.0.1-192.168.0.30
+int ToBrSRV
+  ip nat inside
 !
-ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+ip nat pool BR 10.0.0.1-10.0.0.30
+!
+ip nat source dynamic inside-to-outside pool BR overload interface ToISP
 ```
+
+#### Пример:
+![image](https://github.com/user-attachments/assets/be3d6c0f-d983-4f14-8d38-5cdb03ba061b)
+
+![image](https://github.com/user-attachments/assets/068c2418-221b-4b19-a582-f143b0790723)
+
+![image](https://github.com/user-attachments/assets/64fe0bec-ff97-4ed5-8602-bd1b1b3b07e4)
 
 </details>
 
@@ -769,7 +773,7 @@ ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
 
 Создаем **пул** для **DHCP-сервера**:
 ```yml
-ip pool hq-cli 192.168.200.14-192.168.200.14
+ip pool HQ 10.0.200.2-10.0.200.62
 ```
 
 <br/>
@@ -777,19 +781,19 @@ ip pool hq-cli 192.168.200.14-192.168.200.14
 Настраиваем сам **DHCP-сервер**:
 ```yml
 dhcp-server 1
-  pool hq-cli 1
+  pool HQ 1
     mask 28
-    gateway 192.168.200.1
-    dns 192.168.100.62
+    gateway 10.0.200.1
+    dns 10.0.100.2
     domain-name au-team.irpo
 ```
-> **`pool hq-cli 1`** - привязка **пула**
+> **`pool HQ 1`** - привязка **пула**
 
 > **`mask 28`** - указание **маски** для выдаваемых адресов из пула
 
-> **`gateway 192.168.200.1`** - указание **шлюза по умолчанию** для клиентов
+> **`gateway 10.0.200.1`** - указание **шлюза по умолчанию** для клиентов
 
-> **`dns 192.168.100.62`** - указание **DNS-сервера** для клиентов
+> **`dns 10.0.100.2`** - указание **DNS-сервера** для клиентов
 
 > **`domain-name au-team.irpo`** - указание **DNS-суффикса** для офиса **HQ**
 
@@ -797,9 +801,29 @@ dhcp-server 1
 
 Привязываем **DHCP-сервер** к интерфейсу (смотрящий в сторону **CLI**):
 ```yml
-interface int2
+interface ToHqCLI
   dhcp-server 1
 ```
+
+#### Пример:
+![image](https://github.com/user-attachments/assets/ebdd3bfb-c40b-44a5-ba96-0b6199ea5812)
+
+#### Для работы HQ-CLI нужно настроить на его интерфейсе DHCP
+
+Удалить старый:
+```yml
+su -
+nmcli connection delete System\ ens18
+```
+
+#### Пример:
+![image](https://github.com/user-attachments/assets/10a96309-80ee-4db9-b8d9-12992fbdc744)
+
+![image](https://github.com/user-attachments/assets/5e4bc06f-88db-4f73-854b-9573b5ec9058)
+
+И настроить новый через граф.интерфейс:
+
+![image](https://github.com/user-attachments/assets/d676154c-458b-42d2-9740-5a4be82cbf8d)
 
 </details>
 
