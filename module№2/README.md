@@ -216,7 +216,7 @@ lsblk
 
 Устанавливаем mdadm и nfs:
 ```yml
-apt-get update && apt-get insall mdadm nfs-server
+apt-get update && apt-get install mdadm nfs-server
 ```
 
 <br/>
@@ -749,7 +749,7 @@ docker compose -f wiki.yml up -d
 
 На **HQ-CLI** в браузере вводим **`http://br-srv:8080`** и начинаем установку **MediaWiki**, нажав на **set up the wiki**:
 <p align="center">
-  <img width="600" src=https://github.com/user-attachments/assets/52ef6b9b-ba3e-428d-af07-0992be7c01a2
+  <img width="600" src="https://github.com/user-attachments/assets/52ef6b9b-ba3e-428d-af07-0992be7c01a2"
 </p>
 
 <br/>
@@ -770,7 +770,7 @@ docker compose -f wiki.yml up -d
 
 Заполняем параметры для базы данных в соответствии с заданными переменными окружения в **wiki.yml**:
 <p align="center">
-  <img width="250" src="https://github.com/user-attachments/assets/edbfc738-5406-4d3f-a73f-9cdad1f15398"
+  <img width="250" src="https://github.com/user-attachments/assets/b3da0131-f70c-40e9-b0ab-5d818195dc3f"
 </p>
 
 <br/>
@@ -814,7 +814,7 @@ docker compose -f wiki.yml up -d
 
 Перемещаем файл **`LocalSettings.php`** в домашнюю директорию пользователя **sshuser**:
 ```yml
-mv /home/user/Загрузки/LocalSettings.php /home/sshuser
+mv /home/user/Downloads/LocalSettings.php /home/sshuser
 ```
 > В моем случае, ранние действия выполнялись из под пользователя **user**, поэтому загруженный файл оказался именно в его папке
 
@@ -822,19 +822,19 @@ mv /home/user/Загрузки/LocalSettings.php /home/sshuser
 
 Передаем файл с **HQ-CLI** на **BR-SRV**:
 ```yml
-scp -P 2024 /home/sshuser/LocalSettings.php sshuser@192.168.0.30:/home/sshuser
+scp -P 2024 /home/sshuser/LocalSettings.php sshuser@br-srv:/home/sshuser
 ```
 > **-P** - указание порта SSH
 >
 > **/home/sshuser/LocalSettings.php** - файл, который будет передан
 >
-> **sshuser@192.168.0.30:/home/sshuser** - имя-пользователя@IP-адрес:директория-назначения
+> **sshuser@br-srv:/home/sshuser** - имя-пользователя@IP-адрес:директория-назначения
 
 <br/>
 
 На **BR-SRV** перемещаем файл в домашнюю директорию **root**:
 ```yml
-mv /home/sshuser/LocalSettings.php /root
+mv /home/sshuser/LocalSettings.php ~
 ```
 > Если файл **wiki.yml** создавали в домашней директории другого пользователя - перемещаем туда
 
@@ -878,14 +878,14 @@ docker compose -f wiki.yml up -d
 
 Проброс портов с 80 на 8080 для работы сервиса **wiki**:
 ```yml
-ip nat source static tcp 192.168.0.1 80 192.168.0.30 8080
+ip nat source static tcp 192.168.3.10 8080 172.16.5.2 80
 ```
 
 <br/>
 
 Проброс портов с 2024 на 2024:
 ```yml
-ip nat source static tcp 192.168.0.1 2024 192.168.0.30 2024
+ip nat source static tcp 192.168.3.10 2024 172.16.5.2 2024
 ```
 
 <br/>
@@ -894,7 +894,7 @@ ip nat source static tcp 192.168.0.1 2024 192.168.0.30 2024
 
 Проброс портов с 2024 на 2024:
 ```yml
-ip nat source static tcp 192.168.100.1 2024 192.168.100.62 2024
+ip nat source static tcp 192.168.1.10 2024 172.16.4.2 2024
 ```
 
 </details>
@@ -936,28 +936,14 @@ apt-get install -y moodle moodle-apache2 moodle-base moodle-local-mysql phpMyAdm
 
 Добавляем в **автозагрузку** базу данных:
 ```yml
-systemctl enable --now mysqld
+systemctl enable --now mariadb
 ```
 
 <br/>
 
-Задаем пароль для пользователя **root** в базе данных:
+Изменяем строку, отвечающую за количество входных переменных по пути **`/etc/php/8.2/apache2-mod_php/php.ini`**:
 ```yml
-mysqladmin password 'P@ssw0rd'
-```
-
-<br/>
-
-Редактируем настройки **веб-сервера**:
-```yml
-cat /etc/httpd2/conf/include/Directory_moodle_default.conf | grep 'Require all granted' || sed -i '/AllowOverride None/a Require all granted' /etc/httpd2/conf/include/Directory_moodle_default.conf
-```
-
-<br/>
-
-Изменяем строку, отвечающую за количество входных переменных:
-```yml
-sed -i 's/; max_input_vars = 1000/max_input_vars = 5000/g' /etc/php/8.2/apache2-mod_php/php.ini
+max_input_vars = 5000
 ```
 
 <br/>
@@ -971,15 +957,7 @@ systemctl enable --now httpd2
 
 Авторизуемся в **MySQL**:
 ```yml
-mysql -u root -p
-```
-> Вводим ранее указанный пароль
-
-<br/>
-
-Создаем **пользователя** для базы данных:
-```yml
-create user 'moodle'@'localhost' identified by 'P@ssw0rd';
+mariadb -u root
 ```
 
 <br/>
@@ -991,9 +969,9 @@ create database moodledb default character set utf8 collate utf8_unicode_ci;
 
 <br/>
 
-Выдаем **права** пользователю на созданную базу данных:
+Создаем **пользователя** для базы данных и выдаем ему права:
 ```yml
-grant all privileges on moodledb.* to moodle@localhost;
+grant all on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
 ```
 
 <br/>
@@ -1061,7 +1039,7 @@ grant all privileges on moodledb.* to moodle@localhost;
 
 После успешного создания попадаем на главную страницу:
 <p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/9ae25d22-7cf0-4b8c-8fd9-c1f538679d82"
+  <img width="600" src="https://github.com/user-attachments/assets/992d766a-e632-402b-8051-b051bd62c80a"
 </p>
 
 </details>
