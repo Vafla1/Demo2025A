@@ -5,7 +5,7 @@
 ### Содержание
 
 1. **[Настройте доменный контроллер Samba на машине BR-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1)**
-    > Не решено
+    
 2. **[Сконфигурируйте файловое хранилище](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-2)**
 
 3. **[Настройте службу сетевого времени на базе сервиса chrony](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-3)**
@@ -45,7 +45,7 @@
 <br/>
 
 <details>
-<summary>Решено</summary>
+<summary>Решено не полностью</summary>
 <br/>
 
 Так как HQ-CLI войдет в домен нужно добавить ему DNS нашего будущего samba(BR-SRV) на HQ-RTR перенастроим DHCP:
@@ -127,9 +127,11 @@ apt-get update && apt-get install task-auth-ad-sssd admc gpui
 <br/>
 
 Чтобы добавить клиента в домен переходим на рабочем столе в Menu -> Contorl Center -> System managment center -> Authentication
+
 ![image](https://github.com/user-attachments/assets/1a88dddb-2bd2-407c-84c8-07e5c3cbcb5c)
 
 Применяем. Вводим пароль Администратора домена:
+
 ![image](https://github.com/user-attachments/assets/b319352b-1ee9-4bac-9425-41e0fcee8de0)
 
 Через некоторое время должно выйти " Добро пожаловать в au-team.irpo ". Потом необходимо перезагрузить машину
@@ -152,6 +154,22 @@ samba-tool user add user5.hq
 samba-tool group add hq
 samba-tool group addmembers hq user1.hq,user2.hq,user3.hq,user4.hq,user5.hq
 ```
+
+<br/>
+
+Разрешаем использовать sudo всем
+```yml
+control sudo public
+```
+
+<br/>
+
+Настройка прав пользователей группы hq. Редактируем файл /etc/sudoers:
+```yml
+%hq ALL=(root) /usr/bin/id, /bin/grep, /bin/cat
+```
+#### Пример:
+![image](https://github.com/user-attachments/assets/70b6c999-c7bd-4a75-949e-f72fb88279f5)
 
 </details>
 
@@ -196,21 +214,9 @@ lsblk
 
 <br/>
 
-Обнуляем суперблоки для добавленных дисков:
+Устанавливаем mdadm и nfs:
 ```yml
-mdadm --zero-superblock --force /dev/sd{b,c,d}
-```
-> Вывод:
-> ```yml
-> mdadm: Unrecongised md component device - /dev/sdx
-> ```
-> > Гласит о том, что диски не использовались ранее для **RAID**
-
-<br/>
-
-Удаляем старые метаданные и подпись на дисках:
-```yml
-wipefs --all --force /dev/sd{b,c,d}
+apt-get update && apt-get insall mdadm nfs-server
 ```
 
 <br/>
@@ -245,21 +251,7 @@ lsblk
 
 <br/>
 
-Создаем файловую систему из созданного **RAID**:
-```yml
-mkfs -t ext4 /dev/md0
-```
-
-<br/>
-
 #### Создание файла `mdadm.conf`
-
-Создаем директорию для файла:
-```yml
-mkdir /etc/mdadm
-```
-
-<br/>
 
 Заполняем файл информацией:
 ```yml
@@ -269,18 +261,32 @@ mdadm --detail --scan | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf
 
 <br/>
 
+Создаем файловую систему из созданного **RAID**:
+```yml
+mkfs -t ext4 /dev/md0
+```
+
+<br/>
+
 #### Создание файловой системы и монтирование RAID-массива
 
 Создаем директорию для монтирования массива:
 ```yml
-mkdir /mnt/raid5
+mkdir /raid5
+```
+
+<br/>
+
+Смотрим имя диска md0:
+```yml
+blkid /dev/md0
 ```
 
 <br/>
 
 Добавляем строку в **`/etc/fstab`**:
 ```yml
-/dev/md0  /mnt/raid5  ext4  defaults  0  0
+UUID=09994f40-ef75-439c-9f13-20f3a0014ca3  /raid5  ext4  defaults  0  0
 ```
 
 <br/>
@@ -298,41 +304,36 @@ df -h
 ```
 > Вывод:
 > ```yml
-> /dev/md0  2.0G  24K  1.9G  1%  /mnt/raid5
+> /dev/md0  2.0G  24K  1.9G  1%  /raid5
 > ```
 
 <br/>
 
 #### Настройка NFS
 
-Устанавливаем пакеты для **NFS-сервера**:
-```yml
-apt-get install -y nfs-{server,utils}
-```
-
-<br/>
-
 Создаем директорию для общего доступа:
 ```yml
-mkdir /mnt/raid5/nfs
+mkdir /raid5/nfs
 ```
 
 <br/>
 
 Выдаем права на чтение и запись этой директории:
 ```yml
-chmod 766 /mnt/raid5/nfs
+chmod 766 /raid5/nfs
 ```
 
 <br/>
 
 Добавляем строку в **`/etc/exports`**:
 ```yml
-/mnt/raid5/nfs 192.168.200.0/28(rw,no_root_squash)
+/raid5/nfs 192.168.200.0/28 (sync,rw,no_root_squash)
 ```
 > **/mnt/raid5/nfs** - общий ресурс
 >
-> **192.168.200.0/28** - клиентская сеть, которой разрешено монтирование общего ресурса
+> **192.168.2.0/28** - клиентская сеть, которой разрешено монтирование общего ресурса
+>
+> **sync** — синхронный режим доступа
 >
 > **rw** — разрешены чтение и запись
 >
@@ -340,17 +341,6 @@ chmod 766 /mnt/raid5/nfs
 
 <br/>
 
-Экспортируем файловую систему, которую прописали ранее:
-```yml
-exportfs -arv
-```
-> **-a** - экспортировать все указанные каталоги
->
-> **-r** - повторный экспорт всех каталогов, синхронизируя **/var/lib/nfs/etab** с **/etc/exports** и файлами в **/etc/exports.d**
->
-> **-v** - подробный вывод
-
-<br/>
 
 Запускаем и добавляем в автозагрузку **NFS-сервер**:
 ```yml
@@ -359,11 +349,20 @@ systemctl enable --now nfs-server
 
 <br/>
 
+Чтобы клиент видел по имени hq-rtr и br-rtr необходимо на br-srv:
+```yml
+samba-tool computer add hq-rtr --ip-address=192.168.2.1
+samba-tool computer add br-rtr --ip-address=192.168.3.1
+samba-tool computer add hq-srv --ip-address=192.168.1.10
+```
+
+<br/>
+
 #### Настройка клиента
 
 Устанавливаем требуемые пакеты для **NFS-клиента**:
 ```yml
-apt-get update && apt-get install -y nfs-{utils,clients}
+apt-get install -y nfs-{utils,clients}
 ```
 
 <br/>
@@ -384,7 +383,7 @@ chmod 777 /mnt/nfs
 
 Добавляем строку в **`/etc/fstab`** для автоматического монтирования общего ресурса:
 ```yml
-192.168.100.62:/mnt/raid5/nfs  /mnt/nfs  nfs  defaults  0  0
+hq-srv:/raid5/nfs  /mnt/nfs  nfs  defaults  0  0
 ```
 
 <br/>
@@ -402,7 +401,7 @@ df -h
 ```
 > Вывод:
 > ```yml
-> 192.168.100.62:/mnt/raid5/nfs  2,0G  0  1,9G  0%  /mnt/nfs
+> hq-srv:/mnt/raid5/nfs  2,0G  0  1,9G  0%  /mnt/nfs
 > ```
 </details>
 
@@ -441,12 +440,12 @@ apt-get install -y chrony
 # Please consider joining the pool (https://www.pool.ntp.org/join.html
 #pool pool.ntp.org iburst
 
-server 127.0.0.1 iburst prefer
+server 2.ru.pool.ntp.org iburst prefer
 hwtimestamp *
 local stratum 5
 allow 0/0
 ```
-> **server 127.0.0.1** - указываем сервером синхронизации самого себя
+> **server 2.ru.pool.ntp.org** - указываем сервером синхронизации самого себя
 > > **iburst** - принудительно отправляет пакеты для точности синхронизации
 > > 
 > > **prefer** - отдает приоритет этому серверу
@@ -466,32 +465,6 @@ systemctl enable --now chronyd
 
 <br/>
 
-#### Проверка конфигурации NTP-сервера
-
-Получаем вывод источников времени с помощью команды:
-```yml
-chronyc sources
-```
-> Вывод:
-> ```yml
-> MS Name/IP address        Stratum  Poll  Reach  LastRx  Last  sample
-> =============================================================================
-> ^/ localhost.localdomain  0        8     377    -       +0ns[  +0ns] +/-  0ns
-> ```
-
-<br/>
-
-Получаем вывод **уровня стратума** с помощью связки команд:
-```yml
-chronyc tracking | grep Stratum
-```
-> Вывод:
-> ```yml
-> Stratum: 5
-> ```
-
-<br/>
-
 #### Конфигурация NTP-клиента EcoRouter
 
 Указываем IP-адрес **NTP-сервера**:
@@ -508,24 +481,10 @@ ntp timezone utc+5
 
 <br/>
 
-#### Проверка конфигурации NTP-клиента EcoRouter
-
-Проверяем командой:
+Сохраняемся:
 ```yml
-show ntp status
+wr mem
 ```
-> Вывод:
-> ```yml
-> Status Description
-> *      best
-> +      sync
-> -      failed
-> ?      unknown
->
-> ----------------------------------------------------------------------------------------------------
-> Status  |  VR name  |  Server  |  Stratum  |  Delay  |  Version  |  Offset  |  Last  |  Source IP
-> ----------------------------------------------------------------------------------------------------
->        *|    default|172.16.4.1|          5|   0.0391|          4|    0.0036|    3:26|        
 
 <br/>
 
@@ -549,16 +508,17 @@ server 172.16.4.1 iburst prefer
 
 <br/>
 
-Запускаем утилиту **chrony** и добавляем ее в автозагрузку:
+Указываем timezone void бы оценил)
 ```yml
-systemctl enable --now chronyd
+timedatectl set-timezone Asia/Yekaterinburg
 ```
 
 <br/>
 
-#### Проверка конфигурации NTP-клиента Alt Linux
-
-Проверка NTP-клиента на Alt Linux аналогична **[проверке NTP-сервера на Alt Linux](https://github.com/damh66/demo2025/tree/main/module2#%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8-ntp-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0)**
+Запускаем утилиту **chrony** и добавляем ее в автозагрузку:
+```yml
+systemctl enable --now chronyd
+```
 
 </details>
 
@@ -591,7 +551,7 @@ PasswordAuthentication yes
 Banner /etc/openssh/bannermotd
 AllowUsers  sshuser
 ```
-> Первоначальная настройка **SSH** производилась в задании **[Настройка безопасного удаленного доступа на серверах HQ-SRV и BR-SRV](https://github.com/damh66/demo2025/tree/main/module1#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-5)** из **[Модуля 1](https://github.com/damh66/demo2025/tree/main/module1#demo2025---%D0%BC%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-1)**
+> Первоначальная настройка **SSH** производилась в задании **[Настройка безопасного удаленного доступа на серверах HQ-SRV и BR-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%961/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-5)** из **[Модуля 1](https://github.com/Vafla1/Demo2025A/tree/main/module%E2%84%961)**
 
 <br/>
 
@@ -604,61 +564,58 @@ apt-get install -y ansible sshpass
 
 <br/>
 
-Редактируем указанные строки в **конфигурационном файле `/etc/ansible/ansible.cfg`**:
+Нужно задать интерпретатор в **конфигурационном файле `/etc/ansible/hosts`**:
 ```yml
-inventory = ./inventory.yml
-host_key_checking = False
-```
-> **inventory = ./inventory.yml** - путь до инвентарного файла
->
-> **host_key_checking = False** - отключение проверки ключа хоста
-
-<br/>
-
-Далее заполняем **инвентарный файл `/etc/ansible/inventory.yml`**:
-```yml
-all:
-  children:
-    Networking:
-      hosts:
-        hq-rtr:
-        br-rtr:
-    Servers:
-      hosts:
-        hq-srv:
-          ansible_host: 192.168.100.62
-          ansible_port: 2024
-    Clients:
-      hosts:
-        hq-cli:
-          ansible_host: 192.168.200.14
-          ansible_port: 2024
+[defaults]
+interperter_python=/usr/bin/python3 
 ```
 
 <br/>
 
-Создаем файлы с переменными для **всех категорий** и для категории **Networking**:
+Редактируем указанные строки в **файле `/etc/ansible/hosts`**:
 ```yml
-cd /etc/ansible
-mkdir group_vars
-touch group_vars/{all.yml,Networking.yml}
+[local:vars]
+ansible_user=sshuser
+ansible_password=P@ssw0rd
+ansible_python_interpreter=/usr/bin/python3
+ansible_port 2024
+
+[local]
+hq-srv
+hq-cli
+
+[ecorouter:vars]
+ansible_user=net_admin
+ansible_password=P@$$word
+ansible_connection=network_cli
+ansible_network_os=ios
+ansible_python_interpreter=/usr/bin/python3
+
+[ecorouter]
+hq-rtr
+br-rtr
 ```
 
 <br/>
 
-Редактируем их:
+Зайдите по ssh на HQ-CLI и HQ-SRV, чтобы внести их в доверенные устройства:
 ```yml
-ansible_ssh_user: sshuser
-ansible_ssh_pass: P@ssw0rd
-ansible_python_interpreter: /usr/bin/python3
+ssh -p 2024 ssh@name
 ```
-> all.yml
 
+<br/>
+
+Чтобы разрешить подключение по ssh на ecorouter нужно выполнить:
 ```yml
-ansible_connection: network_cli
-ansible_network_os: ios
+security none
 ```
-> Networking.yml
+
+<br/>
+
+Сохраним:
+```yml
+wr mem
+```
 
 <br/>
 
