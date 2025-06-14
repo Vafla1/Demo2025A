@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/c213ab0a-f7f1-4d3c-ad3e-9052cca12148)![image](https://github.com/user-attachments/assets/1d8af385-cf05-40f9-b784-125fcc45c61e)# *Demo2025 - Модуль 1*
+# *Demo2025 - Модуль 1*
 
 ### Содержание
 
@@ -1077,7 +1077,7 @@ nslookup **IP-адрес/DNS-имя**
 
 #### Настройка часового пояса на Alt Linux
 
-Меняем часовой пояс следующей командой:
+Меняем часовой пояс следующей командой (на ваш часовой пояс):
 ```yml
 timedatectl set-timezone Asia/Yekaterinburg
 ```
@@ -1093,7 +1093,7 @@ timedatectl status
 
 #### Настройка часового пояса на EcoRouter
 
-Прописываем команду:
+Прописываем команду (на ваш часовой пояс):
 ```yml
 ntp timezone utc+5
 ```
@@ -1105,4 +1105,10 @@ ntp timezone utc+5
 show ntp timezone
 ```
 
+<br/>
+
+Сохраняем:
+```yml
+wr mem
+```
 </details>
