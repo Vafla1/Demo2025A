@@ -1,5 +1,7 @@
 # *Demo2025 - Модуль 2*
 
+> Предупреждение - модуль 1 и 2 не совпадают по IP-адресам. Также могут быть отличия от этого стенда
+
 ### Содержание
 
 1. **[Настройте доменный контроллер Samba на машине BR-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1)**
@@ -20,9 +22,9 @@
 <br/>
 
 <p align="center">
-  <img width="450" height="600" src="https://github.com/user-attachments/assets/8ee209f5-6fed-4f03-bbe3-e202155957b3"
+  <img width=auto height=auto src="https://github.com/user-attachments/assets/fa3a32f2-3a63-468d-bb4d-86261bf7f9c8"
 <p\>
-<p align="center"><strong>Топология</strong></p>
+<p align="center"><strong>Топология сети</strong></p>
 
 <br/>
 
@@ -43,8 +45,113 @@
 <br/>
 
 <details>
-<summary>Не решено</summary>
+<summary>Решено</summary>
 <br/>
+
+Так как HQ-CLI войдет в домен нужно добавить ему DNS нашего будущего samba(BR-SRV) на HQ-RTR перенастроим DHCP:
+```yml
+dhcp-server 1
+dns 192.168.3.10, 192.168.1.10
+```
+
+<br/>
+
+Сохраним:
+```yml
+wr mem
+```
+#### Пример:
+![image](https://github.com/user-attachments/assets/f67c7da5-ef9f-4294-8274-111921226e5b)
+
+![image](https://github.com/user-attachments/assets/45c79f79-38ad-4ba2-8899-35413f765cac)
+
+![image](https://github.com/user-attachments/assets/2380b73c-9262-46d4-988d-d533ab8ef00f)
+
+<br/>
+
+Установим samba на BR-SRV:
+```yml
+apt-get update && apt-get install task-samba-dc
+```
+
+<br/>
+
+Создадим и очистим некоторые папки:
+```yml
+rm /etc/samba/smb.conf
+rm -rf /var/lib/samba/
+rm -rf /var/cache/samba/
+mkdir -p /var/lib/samba/sysvol/
+```
+
+<br/>
+
+Настройка DNS. На интерфейсе в resolv.conf нужно указать себя. Потом перезагрузить сеть:
+```yml
+nameserver 127.0.0.1
+search au-team.irpo
+```
+#### Пример:
+![image](https://github.com/user-attachments/assets/df8f7ef4-b84b-414b-b3c6-da876b1d7dbb)
+
+<br/>
+
+Настроем samba (если выйдет ошибка снова удалите smb.conf):
+```yml
+samba-tool domain provision --realm=au-team.irpo --domain=au-team --adminpass='P@ssw0rd' --dns-backend=SAMBA_INTERNAL --option="dns forwarder = 192.168.1.10" --server-role=dc --use-rfc2307
+```
+
+<br/>
+
+Скопируем файл krb5.conf и добавим samba в автозагрузку:
+```yml
+cp /var/lib/samba/private/krb5.conf /etc/krb5.conf
+systemctl enable --now samba
+```
+
+<br/>
+
+Проверим (если все хорошо, то samba настроен корректно):
+```yml
+apt-get install bind-utils
+host -t SRV _kerberos._udp.au-team.irpo
+```
+
+<br/>
+
+Переходим на клиента HQ-CLI и устанавливаем пакетик жиес:
+```yml
+apt-get update && apt-get install task-auth-ad-sssd admc gpui
+```
+
+<br/>
+
+Чтобы добавить клиента в домен переходим на рабочем столе в Menu -> Contorl Center -> System managment center -> Authentication
+![image](https://github.com/user-attachments/assets/1a88dddb-2bd2-407c-84c8-07e5c3cbcb5c)
+
+Применяем. Вводим пароль Администратора домена:
+![image](https://github.com/user-attachments/assets/b319352b-1ee9-4bac-9425-41e0fcee8de0)
+
+Через некоторое время должно выйти " Добро пожаловать в au-team.irpo ". Потом необходимо перезагрузить машину
+
+<br/>
+
+Создаем пользователей на BR-SRV:
+```yml
+samba-tool user add user1.hq
+samba-tool user add user2.hq
+samba-tool user add user3.hq
+samba-tool user add user4.hq
+samba-tool user add user5.hq
+```
+
+<br/>
+
+Создаем группу hq и добавляем в нее пользователей:
+```yml
+samba-tool group add hq
+samba-tool group addmembers hq user1.hq,user2.hq,user3.hq,user4.hq,user5.hq
+```
 
 </details>
 
