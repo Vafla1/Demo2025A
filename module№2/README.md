@@ -1,6 +1,6 @@
 # *Demo2025 - Модуль 2*
 
-> Предупреждение - модуль 1 и 2 не совпадают по IP-адресам. Также могут быть отличия от этого стенда
+> Предупреждение - модуль 1 и 2 не совпадают по IP-адресам. Также могут быть отличия от того стенда
 
 ### Содержание
 
@@ -18,7 +18,7 @@
 
 7. **[Запустите сервис moodle на сервере HQ-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-7)**
 
-8. 
+8. **[Настройте веб-сервер nginx как обратный прокси-сервер на HQ-RTR](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-8)**
 
 9. **[Удобным способом установите приложение Яндекс Браузере для организаций на HQ-CLI](https://github.com/Vafla1/Demo2025A/edit/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-9)**
 <br/>
@@ -896,6 +896,11 @@ ip nat source static tcp 192.168.3.10 2024 172.16.5.2 2024
 
 #### Конфигурация HQ-RTR
 
+Проброс портов с 80 на 80 (без этого не будет работать 8 задание полноценно):
+```yml
+ip nat source static tcp 192.168.1.10 80 172.16.4.2 80
+```
+
 Проброс портов с 2024 на 2024:
 ```yml
 ip nat source static tcp 192.168.1.10 2024 172.16.4.2 2024
@@ -1048,6 +1053,125 @@ grant all on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
 
 </details>
 
+## Задание 8
+
+### Настройте веб-сервер nginx как обратный прокси-сервер на HQ-RTR 
+
+<br/>
+
+<details>
+<summary>Решение</summary>
+<br/>
+
+**Так как на HQ-RTR нет утилиты nginx, обратным-прокси будет выступать ISP**
+
+#### Установка и настройка nginx
+
+Установка пакета:
+```yml
+apt-get install nginx
+```
+
+<br/>
+
+Настройка **`конфигурационного файла /etc/nginx/nginx.conf`**. Нужно в httpd{} добавить:
+```yml
+server {
+        server_name moodle.au-team.irpo;
+        location / {
+            proxy_pass http://172.16.4.2:80/moodle/;
+            proxy_redirect      off;
+            proxy_set_header    Host    $host;
+            proxy_set_header    X-Real-IP       $remote_addr;
+            proxy_set_header    X-Forwaded-For  $proxy_add_x_forwarded_for;
+        }
+}
+
+server {
+        server_name wiki.au-team.irpo;
+        location / {
+            proxy_pass http://172.16.5.2:80/;
+            proxy_redirect      off;
+            proxy_set_header    Host    $host;
+            proxy_set_header    X-Real-IP       $remote_addr;
+            proxy_set_header    X-Forwaded-For  $proxy_add_x_forwarded_for;
+        }
+}
+```
+
+<br/>
+
+Добавим в автозагрузку:
+```yml
+systemctl enable --now nginx
+```
+
+<br/>
+
+#### Доработка на BR-SRV
+
+Чтобы клиент видел по имени wiki и moodle необходимо на br-srv:
+```yml
+samba-tool computer add wiki --ip-address=172.16.5.1
+samba-tool computer add moodle --ip-address=172.16.4.1
+```
+
+<br/>
+
+#### Доработка wiki
+
+Чтобы wiki работал по имени wiki.au-team.irpo. Нужно редактировать строки файла LocalSettings на BR-SRV:
+```yml
+$wgServer = "http://wiki.au-team.irpo:80";
+```
+
+<br/>
+
+Перезагрузим wiki:
+```yml
+docker compose -f wiki.yml stop
+docker compose -f wiki.yml up -d
+```
+
+<br/>
+
+#### Доработка moodle
+
+Чтобы moodle работал по имени moodle.au-team.irpo. Нужно редактировать строки файла /var/www/webapps/moodle/config.php на HQ-SRV:
+```yml
+$CFG->wwwroot   = 'http://moodle.au-team.irpo';
+```
+
+Перезагрузим moodle:
+```yml
+systemctl restart httpd2
+```
+
+<br/>
+<br/>
+<br/>
+<br/>
+#### Пример:
+![image](https://github.com/user-attachments/assets/3f421750-aff8-43c0-a48f-be9851324fc1)
+
+<br/>
+
+#### Теперь при обращении на moodle.au-team-irpo или на wiki.au-team.irpo будет выходить
+
+<p align="center">
+  <img width="600" src="https://github.com/user-attachments/assets/8433d0a1-fe50-4bfc-8748-4e2959fcd866"
+</p>
+
+<br/>
+
+<p align="center">
+  <img width="600" src="https://github.com/user-attachments/assets/2d83447d-2a50-4122-b190-0caf1191ded8"
+</p>
+
+<br/>
+
+</details>
+
 ## Задание 9
 
 ### Удобным способом установите приложение Яндекс Браузере для организаций на HQ-CLI 
@@ -1064,5 +1188,6 @@ grant all on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
 ```yml
 apt-get install yandex-browser-stable
 ```
+</details>
 
 <br/>
