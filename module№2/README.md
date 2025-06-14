@@ -1057,6 +1057,11 @@ grant all on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
 
 ### Настройте веб-сервер nginx как обратный прокси-сервер на HQ-RTR 
 
+- При обращении к HQ-RTR по доменному имени moodle.au-team.irpo клиента должно перенаправлять на HQ-SRV на стандартный порт, на сервис moodle
+  
+- При обращении к HQ-RTR по доменному имени wiki.au-team.irpo клиента должно перенаправлять на BR-SRV на порт, на сервис mediwiki 
+
+
 <br/>
 
 <details>
