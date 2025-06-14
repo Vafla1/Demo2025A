@@ -1,9 +1,5 @@
 # *Demo2025 - Модуль 2*
 
-### **[Задание](https://github.com/damh66/demo2025/blob/main/%D0%9A%D0%9E%D0%94%2009.02.06-1-2025%20%D0%A2%D0%BE%D0%BC%201%20(%D1%81%D0%BE%D0%BA%D1%80).pdf)**
-
-#
-
 ### Содержание
 
 1. **[Настройте доменный контроллер Samba на машине BR-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1)**
