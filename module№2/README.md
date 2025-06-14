@@ -18,6 +18,8 @@
 
 7. **[Запустите сервис moodle на сервере HQ-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-7)**
 
+8. 
+
 9. **[Удобным способом установите приложение Яндекс Браузере для организаций на HQ-CLI](https://github.com/Vafla1/Demo2025A/edit/main/module%E2%84%962/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-9)**
 <br/>
 
