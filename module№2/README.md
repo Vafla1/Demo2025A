@@ -658,17 +658,17 @@ ansible -m ping all
 
 #### Конфигурация файла Docker-Compose
 
-Останавливаем службу **ahttpd**, которая занимает порт **8080**:
+Останавливаем службу **httpd**, которая занимает порт **8080**:
 ```yml
-systemctl disable —now ahttpd
+systemctl disable —now httpd
 ```
-> **ahttpd** - модуль для веб-интерфейса, который предназначен для управления настройками web-сервера, обеспечивающего работоспособность **Центра управления системой**
+> **httpd** - модуль для веб-интерфейса, который предназначен для управления настройками web-сервера, обеспечивающего работоспособность **Центра управления системой**
 
 <br/>
 
 Устанавливаем **docker** и **docker-compose**:
 ```yml
-apt-get install -y docker-{ce,compose}
+apt-get install -y docker-engine docker-compose
 ```
 
 <br/>
@@ -682,32 +682,38 @@ systemctl enable --now docker
 
 В домашней директории пользователя создаем файл **`wiki.yml`** и прописываем следующее:
 ```yml
+# MediaWiki with MariaDB
+#
+# Access via "http://localhost:8080"
 services:
-  mediawiki:
-    container_name: wiki
+  wiki:
     image: mediawiki
     restart: always
     ports:
-      - "8080:80"
+      - 8080:80
     links:
-      - db
-#    volumes:
-#      - ./LocalSettings.php:/var/www/html/LocalSettings.php
-
-  db:
-    container_name: mariadb
+      - mariadb
+    volumes:
+      - images:/var/www/html/images
+      # After initial setup, download LocalSettings.php to the same directory as
+      # this yaml and uncomment the following line and use compose to restart
+      # the mediawiki service
+      # - ./LocalSettings.php:/var/www/html/LocalSettings.php
+  mariadb: # <- This key defines the name of the database during setup
     image: mariadb
     restart: always
     environment:
-      MARIADB_DATABASE: mediawiki
-      MARIADB_USER: wiki
-      MARIADB_PASSWORD: WikiP@ssw0rd
-      MARIADB_ROOT_PASSWORD: P@ssw0rd
+      # @see https://phabricator.wikimedia.org/source/mediawiki/browse/master/include>
+      MYSQL_DATABASE: mediawiki
+      MYSQL_USER: wiki
+      MYSQL_PASSWORD: WikiP@ssw0rd
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     volumes:
-      - db_data:/var/lib/mysql
+      - db:/var/lib/mysql
 
 volumes:
-  db_data:
+  images:
+  db:
 ```
 > **services** - основной раздел, в котором описываются сервисы
 >
@@ -741,9 +747,9 @@ docker compose -f wiki.yml up -d
 
 #### Установка MediaWiki в веб-интерфейсе
 
-На **HQ-CLI** в браузере вводим **`http://192.168.0.30:8080`** и начинаем установку **MediaWiki**, нажав на **set up the wiki**:
+На **HQ-CLI** в браузере вводим **`http://br-srv:8080`** и начинаем установку **MediaWiki**, нажав на **set up the wiki**:
 <p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/d396a8fb-486e-4cdf-96b2-d7233b5e81f3"
+  <img width="600" src=https://github.com/user-attachments/assets/52ef6b9b-ba3e-428d-af07-0992be7c01a2
 </p>
 
 <br/>
