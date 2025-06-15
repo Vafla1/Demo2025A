@@ -575,7 +575,7 @@ interperter_python=/usr/bin/python3
 ansible_user=sshuser
 ansible_password=P@ssw0rd
 ansible_python_interpreter=/usr/bin/python3
-ansible_port 2024
+ansible_port=2024
 
 [local]
 hq-srv
@@ -597,7 +597,7 @@ br-rtr
 
 Зайдите по ssh на HQ-CLI и HQ-SRV, чтобы внести их в доверенные устройства:
 ```yml
-ssh -p 2024 ssh@name
+ssh -p 2024 sshuser@name
 ```
 
 <br/>
