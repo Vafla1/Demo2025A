@@ -49,7 +49,7 @@
 <br/>
 
 <details>
-<summary>Решено не полностью</summary>
+<summary>Решение</summary>
 <br/>
 
 Так как HQ-CLI войдет в домен нужно добавить ему DNS нашего будущего samba(BR-SRV) на HQ-RTR перенастроим DHCP:
@@ -127,6 +127,21 @@ host -t SRV _kerberos._udp.au-team.irpo
 ```yml
 apt-get update && apt-get install task-auth-ad-sssd admc gpui
 ```
+> admc и gpui необязательно
+
+<br/>
+
+1 способ:
+
+<br/>
+
+```yml
+system-auth write ad au-team.irpo hq-cli au-team 'administrator' 'P@ssw0rd'
+```
+
+<br/>
+
+2 способ:
 
 <br/>
 
@@ -172,8 +187,50 @@ control sudo public
 ```yml
 %hq ALL=(root) /usr/bin/id, /bin/grep, /bin/cat
 ```
+
 #### Пример:
 ![image](https://github.com/user-attachments/assets/70b6c999-c7bd-4a75-949e-f72fb88279f5)
+
+#### Создание и запуск скрипта
+
+Cоздаем файл script и редактируем его в:
+
+```yml
+nano /opt/script
+```
+
+<br/>
+
+```yml
+#!/bin/bash
+csv_file="/opt/users.csv"
+while IFS=";" read -r firstName lastName role phone ou street zip city country passwo>
+if [ "$firstName" == "First Name" ]; then
+continue
+fi
+username="${firstName,,}.${lastName,,}"
+sudo samba-tool user add "$username" P@ssw0rd
+done < "$csv_file"
+```
+
+<br/>
+
+Даем права на запуск:
+
+```yml
+chmod +x /opt/script
+```
+
+<br/>
+
+Запускаем:
+
+```yml
+cd /opt
+./script
+```
+
+Если не сработало, ну что ты лох!
 
 </details>
 
