@@ -136,6 +136,7 @@ apt-get update && apt-get install task-auth-ad-sssd admc gpui
 <br/>
 
 ```yml
+net time set -S au-team.irpo
 system-auth write ad au-team.irpo hq-cli au-team 'administrator' 'P@ssw0rd'
 ```
 
