@@ -4,6 +4,8 @@
 - [Модуль 1](https://github.com/Vafla1/Demo2025A/tree/main/module%E2%84%961)
   
 - [Модуль 2](https://github.com/Vafla1/Demo2025A/tree/main/module%E2%84%962)
+
+- [Модуль 3](https://github.com/Vafla1/Demo2025A/tree/main/module%E2%84%963)
 #
 
 ### Используемые операционные системы
