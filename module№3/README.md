@@ -272,13 +272,101 @@
 #### Конфигурация Zabbix
 
 <br/>
-![image](https://github.com/user-attachments/assets/f9fd24df-6f0a-482b-a6da-38bbae78026f)
+
+![image](https://github.com/user-attachments/assets/9decab7d-c118-4d13-9299-390726150cc7)
 
 <br/>
-<br/>
-<br/>
+
+![image](https://github.com/user-attachments/assets/a55f7dfb-69d5-42a4-a095-cbca2c8a7eb6)
+
 <br/>
 
+![image](https://github.com/user-attachments/assets/b3a1d27b-28f2-4ab8-9af2-ab8f1fc29fcb)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/5a45186e-991f-4470-8758-44789d97a66a)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/55582917-f8bc-487b-ace1-e33b8f3bfc8e)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/65ec9b5c-a29d-47d1-b49d-9d5adffa56f9)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/f7d2fb27-f075-49c8-94a9-4b2e86d44917)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/443c44e5-6f97-4ed3-b88b-8c3b952ec0c1)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/695a5644-1208-4b38-8282-30cb9dfc70b1)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/1520edf4-78b7-475b-a831-e490a587f433)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/682fd2c2-51ba-48d0-9294-07af9a548efe)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/b86f8a5a-0750-4266-897f-4e3a1814730f)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/df1c141b-7792-4f39-8398-1b6c5588a2b9)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/7298ad50-06d2-41cc-a2e1-bbbbfed0c8da)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/f38c72b9-5794-43da-8bb7-846e3da68674)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/ad552db4-905a-4a2e-999c-96a4e1802cb8)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/28e91516-d04f-478e-aad3-b01b7791b34e)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/d09f7d59-5ec0-4169-aec6-61f7785ebb7d)
+Также добавить cname в dnsmasq на hq-srv
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/bccf30bf-cbb9-4b97-be05-7dcfb7cfd809)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/4376ce06-1b64-4f35-8a61-28f0739134ce)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/215f1d37-5d52-4886-901d-e477cd36773d)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/40cdf605-9375-447d-99a0-ee3f8cc2e4aa)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/54ec1b2e-4329-4809-834d-d8b658077def)
+
+<br/>
+
+![image](https://github.com/user-attachments/assets/5b6ddba1-9a69-4c52-a198-90dc5215f3d9)
 
 </details>
 
@@ -286,11 +374,17 @@
 
 ## Задание 8
 
-### Настройте веб-сервер nginx как обратный прокси-сервер на HQ-RTR 
+### Реализуйте механизм инвентаризации машин HQ-SRV и HQ-CLI через Ansible на BR-SRV
 
-- При обращении к HQ-RTR по доменному имени moodle.au-team.irpo клиента должно перенаправлять на HQ-SRV на стандартный порт, на сервис moodle
+- Плейбук должен собирать информацию о рабочих местах:
   
-- При обращении к HQ-RTR по доменному имени wiki.au-team.irpo клиента должно перенаправлять на BR-SRV на порт, на сервис mediwiki 
+    - Имя компьютера
+      
+    - IP-адрес компьютера
+ 
+    - Отчеты, собранные с машин, должны быть размещены в том же каталоге на сервере, где и плейбук, в папке PC_INFO, в формате .yml. Файл называется именем компьютера, который был инвентаризован
+
+    - Рабочий каталог ansible должен располагаться в /etc/ansible
 
 
 <br/>
@@ -299,131 +393,35 @@
 <summary>Решение</summary>
 <br/>
 
-**Так как на HQ-RTR нет утилиты nginx, обратным-прокси будет выступать ISP**
+#### Настройка anible
 
-#### Установка и настройка nginx
-
-Установка пакета:
-```yml
-apt-get install nginx
-```
+![image](https://github.com/user-attachments/assets/74a872ef-94d1-4d25-8fcb-e4870c1b0f7f)
 
 <br/>
 
-Настройка **`конфигурационного файла /etc/nginx/nginx.conf`**. Нужно в httpd{} добавить:
-```yml
-server {
-        server_name moodle.au-team.irpo;
-        location / {
-            proxy_pass http://172.16.4.2:80/moodle/;
-            proxy_redirect      off;
-            proxy_set_header    Host    $host;
-            proxy_set_header    X-Real-IP       $remote_addr;
-            proxy_set_header    X-Forwaded-For  $proxy_add_x_forwarded_for;
-        }
-}
-
-server {
-        server_name wiki.au-team.irpo;
-        location / {
-            proxy_pass http://172.16.5.2:80/;
-            proxy_redirect      off;
-            proxy_set_header    Host    $host;
-            proxy_set_header    X-Real-IP       $remote_addr;
-            proxy_set_header    X-Forwaded-For  $proxy_add_x_forwarded_for;
-        }
-}
-```
+![image](https://github.com/user-attachments/assets/59229546-7d9c-4193-85ff-1c70b2064ca4)
 
 <br/>
 
-Добавим в автозагрузку:
-```yml
-systemctl enable --now nginx
-```
+![image](https://github.com/user-attachments/assets/8872e95d-bdcd-40fc-80ab-775601963a38)
 
 <br/>
-
-#### Доработка на BR-SRV
-
-Чтобы клиент видел по имени wiki и moodle необходимо на br-srv:
-```yml
-samba-tool computer add wiki --ip-address=172.16.5.1
-samba-tool computer add moodle --ip-address=172.16.4.1
-```
-
-<br/>
-
-#### Доработка wiki
-
-Чтобы wiki работал по имени wiki.au-team.irpo. Нужно редактировать строки файла LocalSettings на BR-SRV:
-```yml
-$wgServer = "http://wiki.au-team.irpo:80";
-```
-
-<br/>
-
-Перезагрузим wiki:
-```yml
-docker compose -f wiki.yml stop
-docker compose -f wiki.yml up -d
-```
-
-<br/>
-
-#### Доработка moodle
-
-Чтобы moodle работал по имени moodle.au-team.irpo. Нужно редактировать строки файла /var/www/webapps/moodle/config.php на HQ-SRV:
-```yml
-$CFG->wwwroot   = 'http://moodle.au-team.irpo';
-```
-
-Перезагрузим moodle:
-```yml
-systemctl restart httpd2
-```
-
-<br/>
-<br/>
-<br/>
-<br/>
-#### Пример:
-![image](https://github.com/user-attachments/assets/3f421750-aff8-43c0-a48f-be9851324fc1)
-
-<br/>
-
-#### Теперь при обращении на moodle.au-team-irpo или на wiki.au-team.irpo будет выходить
-
-<p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/8433d0a1-fe50-4bfc-8748-4e2959fcd866"
-</p>
-
-<br/>
-
-<p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/2d83447d-2a50-4122-b190-0caf1191ded8"
-</p>
-
 <br/>
 
 </details>
 
 ## Задание 9
 
-### Удобным способом установите приложение Яндекс Браузере для организаций на HQ-CLI 
+### Реализуйте механизм резервного копирования конфигурации для машин HQ-RTR и BR-RTR, через Ansible на BR-SRV
+
+- Плейбук должен собирать информацию о сетевых устройствах HQ-RTR и BR-RTR и делать резервную копию конфигурации (в случае использования EcoRouter – полную конфигурацию, в случае ОС на базе Linux – файлы конфигурации динамической маршрутизации, настроек межсетевого экрана, параметров настройки сети, настройки динамической конфигурации хостов). Информацию сохранять в папку NETWORK_INFO
 
 <br/>
 
 <details>
-<summary>Решение</summary>
+<summary>Не решено </summary>
 <br/>
 
-#### Установка Яндекс Браузера
-
-Установка пакета:
-```yml
-apt-get install yandex-browser-stable
-```
 </details>
 
 <br/>
