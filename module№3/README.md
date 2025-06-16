@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/cad59816-3ca3-463b-863f-1121e76939c1)# *Demo2025 - Модуль 3*
+# *Demo2025 - Модуль 3*
 
 > Предупреждение - 3 модуль делался поверх 2 модуля
 
