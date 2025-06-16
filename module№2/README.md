@@ -603,7 +603,7 @@ Port 2024
 MaxAuthTries 2
 PubkeyAuthentication yes
 PasswordAuthentication yes
-Banner /etc/openssh/bannermotd
+Banner /etc/openssh/banner
 AllowUsers  sshuser
 ```
 > Первоначальная настройка **SSH** производилась в задании **[Настройка безопасного удаленного доступа на серверах HQ-SRV и BR-SRV](https://github.com/Vafla1/Demo2025A/blob/main/module%E2%84%961/README.md#%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-5)** из **[Модуля 1](https://github.com/Vafla1/Demo2025A/tree/main/module%E2%84%961)**
