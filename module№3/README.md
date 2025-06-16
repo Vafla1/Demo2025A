@@ -269,124 +269,20 @@
 <summary>Решение</summary>
 <br/>
 
-#### Конфигурация базы данных
-
-Устанавливаем необходимые пакеты:
-```yml
-apt-get install -y moodle moodle-apache2 moodle-base moodle-local-mysql phpMyAdmin
-```
+#### Конфигурация Zabbix
 
 <br/>
-
-Добавляем в **автозагрузку** базу данных:
-```yml
-systemctl enable --now mariadb
-```
+![image](https://github.com/user-attachments/assets/f9fd24df-6f0a-482b-a6da-38bbae78026f)
 
 <br/>
-
-Изменяем строку, отвечающую за количество входных переменных по пути **`/etc/php/8.2/apache2-mod_php/php.ini`**:
-```yml
-max_input_vars = 5000
-```
-
+<br/>
+<br/>
 <br/>
 
-Добавляем в **автозагрузку** веб-сервер:
-```yml
-systemctl enable --now httpd2
-```
-
-<br/>
-
-Авторизуемся в **MySQL**:
-```yml
-mariadb -u root
-```
-
-<br/>
-
-Создаем базу данных:
-```yml
-create database moodledb default character set utf8 collate utf8_unicode_ci;
-```
-
-<br/>
-
-Создаем **пользователя** для базы данных и выдаем ему права:
-```yml
-grant all on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
-```
-
-<br/>
-
-Переходим на **`hq-srv.au-team.irpo/moodle`** и выбираем язык:
-<p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/0e8cdfda-6466-416e-afab-e7f61fcf1b3a"
-</p>
-
-<br/>
-
-Подтверждаем пути директорий:
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/548b1126-3b5a-4104-a692-b0aafdd0617a"
-</p>
-
-<br/>
-
-Выбираем систему управления базы данных:
-<p align="center">
-  <img width="300" src="https://github.com/user-attachments/assets/d21aa42f-8988-44f6-bcab-67e0fa9cae08"
-</p>
-
-<br/>
-
-Заполняем данные о базе данных и пользователе:
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/1c5414a6-5aba-4ffd-8d4a-32e49bcb770b"
-</p>
-
-<br/>
-
-Соглашаемся с условиями:
-<p align="center">
-  <img width="300" src="https://github.com/user-attachments/assets/055ed45c-f87c-44ec-9f3e-0f32737f38c7"
-</p>
-
-<br/>
-
-Убеждаемся в успешной проверке:
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/7ddc9e35-3c96-4623-94d0-9f57e2803b3c"
-</p>
-
-<br/>
-
-После установки настраиваем учетную запись администратора:
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/337888dc-1542-4bdd-90c2-b43dcf14e7fa"
-</p>
-
-> Заполняем в соответствии с условиями задания
-
-<br/>
-
-Указываем название сайта, часовой пояс и электронную почту:
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/494d4a54-dad8-4e60-adc8-f415671bef4a"
-</p>
-<p align="center">
-  <img width="400" src="https://github.com/user-attachments/assets/eca69476-dedd-4fc6-9198-4c7c27d7a428"
-</p>
-
-<br/>
-
-После успешного создания попадаем на главную страницу:
-<p align="center">
-  <img width="600" src="https://github.com/user-attachments/assets/992d766a-e632-402b-8051-b051bd62c80a"
-</p>
 
 </details>
+
+<br/>
 
 ## Задание 8
 
